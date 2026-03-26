@@ -1,0 +1,28 @@
+{
+  "name": "smart-parking-system",
+  "version": "1.0.0",
+  "description": "A full-stack smart parking management system with C++ backend and React frontend",
+  "scripts": {
+    "dev": "start-dev.bat",
+    "build:backend": "cd backend && make",
+    "build:frontend": "cd frontend && npm run build",
+    "start:backend": "cd backend && parking_server.exe",
+    "start:frontend": "cd frontend && npm start",
+    "install:frontend": "cd frontend && npm install",
+    "clean:backend": "cd backend && make clean",
+    "clean:frontend": "cd frontend && rmdir /s /q node_modules build 2>nul"
+  },
+  "keywords": [
+    "parking",
+    "cpp",
+    "react",
+    "fullstack",
+    "rest-api"
+  ],
+  "author": "Srujan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/smart-parking-system.git"
+  }
+}

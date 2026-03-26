@@ -1,0 +1,550 @@
+.vehicle-lookup-page {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Search Card */
+.lookup-search-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-header-icon {
+  color: var(--primary-600);
+}
+
+.search-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 4px;
+}
+
+.search-header p {
+  color: var(--slate-500);
+  font-size: 0.95rem;
+}
+
+.lookup-form {
+  max-width: 600px;
+}
+
+.search-input-group {
+  display: flex;
+  gap: 12px;
+}
+
+.input-with-icon {
+  position: relative;
+  flex: 1;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--slate-400);
+}
+
+.lookup-input {
+  width: 100%;
+  padding: 16px 16px 16px 52px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 2px solid var(--slate-200);
+  border-radius: 14px;
+  background: var(--slate-50);
+  transition: all var(--transition-fast);
+}
+
+.lookup-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  background: var(--input-bg);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.lookup-input::placeholder {
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 400;
+}
+
+.search-btn {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: white;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.search-btn:hover {
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+.search-btn:disabled {
+  opacity: 0.7;
+}
+
+.spinner-sm {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Not Found Card */
+.not-found-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 48px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  color: var(--slate-400);
+}
+
+.not-found-card svg {
+  margin-bottom: 16px;
+}
+
+.not-found-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-700);
+  margin-bottom: 8px;
+}
+
+.not-found-card p {
+  color: var(--slate-500);
+}
+
+.not-found-card strong {
+  color: var(--slate-700);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Vehicle Result */
+.vehicle-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Vehicle Header Card */
+.vehicle-header-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 32px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.vehicle-icon-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-icon-lg.blue {
+  background: var(--primary-100);
+  color: var(--primary-600);
+}
+
+.vehicle-icon-lg.green {
+  background: var(--success-50);
+  color: var(--success-600);
+}
+
+.vehicle-icon-lg.orange {
+  background: var(--warning-50);
+  color: var(--warning-600);
+}
+
+.vehicle-icon-lg.purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.vehicle-main-info {
+  flex: 1;
+}
+
+.vehicle-plate {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.vehicle-type-label {
+  text-transform: capitalize;
+  color: var(--slate-500);
+  font-weight: 500;
+}
+
+.vehicle-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.status-badge.active {
+  background: var(--success-50);
+  color: var(--success-700);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-500);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--slate-50);
+  color: var(--slate-600);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--slate-100);
+}
+
+.info-card-header svg {
+  color: var(--slate-400);
+}
+
+.info-card-body {
+  padding: 20px;
+}
+
+/* Location Display */
+.location-display {
+  text-align: center;
+}
+
+.slot-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-600);
+  margin-bottom: 8px;
+}
+
+.location-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
+.separator {
+  color: var(--slate-300);
+}
+
+/* Time Info */
+.time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-label {
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
+.time-value {
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+.time-value.duration {
+  color: var(--warning-600);
+}
+
+/* Owner Info */
+.owner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.owner-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--slate-700);
+}
+
+.owner-row svg {
+  color: var(--slate-400);
+}
+
+/* Charges Card */
+.charges-card {
+  grid-column: span 2;
+}
+
+.charges-display {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.current-amount {
+  display: flex;
+  align-items: flex-start;
+}
+
+.current-amount .currency {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--success-600);
+  margin-top: 8px;
+}
+
+.current-amount .amount {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--success-600);
+  line-height: 1;
+}
+
+.charges-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.charge-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--slate-600);
+  font-size: 0.9rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--slate-200);
+}
+
+.charge-row:last-child {
+  border-bottom: none;
+}
+
+.charges-note {
+  font-size: 0.8rem;
+  color: var(--slate-400);
+  font-style: italic;
+}
+
+/* History Section */
+.history-section {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--slate-50);
+  border-bottom: 1px solid var(--slate-100);
+}
+
+.history-header svg {
+  color: var(--slate-400);
+}
+
+.history-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--slate-700);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--slate-100);
+  transition: background var(--transition-fast);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item:hover {
+  background: var(--slate-50);
+}
+
+.history-date, .history-duration {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--slate-600);
+  font-size: 0.9rem;
+}
+
+.history-date svg, .history-duration svg {
+  color: var(--slate-400);
+}
+
+.history-amount {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--success-600);
+}
+
+.history-arrow {
+  color: var(--slate-300);
+}
+
+/* Empty State */
+.empty-state-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 64px 32px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.empty-illustration {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--slate-100);
+  color: var(--slate-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.empty-state-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-700);
+  margin-bottom: 8px;
+}
+
+.empty-state-card p {
+  color: var(--slate-500);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vehicle-header-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .vehicle-main-info {
+    width: 100%;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charges-card {
+    grid-column: span 1;
+  }
+
+  .charges-display {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .charges-breakdown {
+    width: 100%;
+  }
+
+  .history-item {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

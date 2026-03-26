@@ -1,0 +1,663 @@
+.park-vehicle-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Progress Steps */
+.steps-container {
+  margin-bottom: 40px;
+}
+
+.steps-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 16px;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--slate-100);
+  border: 2px solid var(--slate-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--slate-400);
+  transition: all var(--transition);
+}
+
+.step.active {
+  background: var(--primary-600);
+  border-color: var(--primary-600);
+  color: white;
+}
+
+.step.completed {
+  background: var(--success-500);
+  border-color: var(--success-500);
+  color: white;
+}
+
+.step-line {
+  width: 80px;
+  height: 3px;
+  background: var(--slate-200);
+  transition: background var(--transition);
+}
+
+.step-line.completed {
+  background: var(--success-500);
+}
+
+.steps-labels {
+  display: flex;
+  justify-content: space-between;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.steps-labels span {
+  font-size: 0.85rem;
+  color: var(--slate-400);
+  font-weight: 500;
+  transition: color var(--transition);
+}
+
+.steps-labels span.active {
+  color: var(--slate-700);
+}
+
+/* Step Content */
+.step-content {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 32px;
+  box-shadow: var(--shadow);
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.step-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 8px;
+}
+
+.step-header p {
+  color: var(--slate-500);
+}
+
+/* Quick Park Card */
+.quick-park-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+
+.quick-park-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e40af;
+}
+
+.quick-park-info > svg {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+.quick-park-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #1e40af;
+}
+
+.quick-park-detail {
+  display: block;
+  font-size: 0.8rem;
+  color: #3b82f6;
+}
+
+.quick-park-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Vehicle Type Grid */
+.vehicle-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.vehicle-type-card {
+  position: relative;
+  padding: 24px;
+  border-radius: 16px;
+  border: 2px solid var(--slate-200);
+  background: var(--slate-50);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.vehicle-type-card:hover:not(.unavailable) {
+  border-color: var(--slate-300);
+  background: var(--card-bg);
+}
+
+.vehicle-type-card.selected {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+}
+
+.vehicle-type-card.selected.blue {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+}
+
+.vehicle-type-card.selected.green {
+  border-color: var(--success-500);
+  background: var(--success-50);
+}
+
+.vehicle-type-card.selected.orange {
+  border-color: var(--warning-500);
+  background: var(--warning-50);
+}
+
+.vehicle-type-card.selected.purple {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.vehicle-type-card.unavailable {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vehicle-type-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.vehicle-type-icon.blue {
+  background: var(--primary-100);
+  color: var(--primary-600);
+}
+
+.vehicle-type-icon.green {
+  background: var(--success-50);
+  color: var(--success-600);
+}
+
+.vehicle-type-icon.orange {
+  background: var(--warning-50);
+  color: var(--warning-600);
+}
+
+.vehicle-type-icon.purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.vehicle-type-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin-bottom: 8px;
+}
+
+.availability {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.availability-count {
+  font-weight: 700;
+  color: var(--success-600);
+  font-size: 0.95rem;
+}
+
+.availability-count.empty {
+  color: var(--error-500);
+}
+
+.availability-total {
+  font-size: 0.8rem;
+  color: var(--slate-400);
+}
+
+.selected-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-600);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form Card */
+.form-card {
+  background: var(--slate-50);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--slate-700);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.form-group label svg {
+  color: var(--slate-400);
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  border: 2px solid var(--slate-200);
+  border-radius: 12px;
+  background: var(--input-bg);
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.uppercase {
+  text-transform: uppercase;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--slate-300);
+  border-radius: 6px;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.checkbox-label input:checked + .checkbox-custom {
+  background: var(--primary-600);
+  border-color: var(--primary-600);
+}
+
+.checkbox-label input:checked + .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--slate-700);
+}
+
+.checkbox-text svg {
+  color: var(--slate-400);
+}
+
+/* Confirmation Card */
+.confirmation-card {
+  background: var(--slate-50);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.confirmation-section {
+  padding: 24px;
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.confirmation-section:last-child {
+  border-bottom: none;
+}
+
+.confirmation-section h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.confirmation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.confirmation-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.confirmation-item .label {
+  font-size: 0.85rem;
+  color: var(--slate-500);
+}
+
+.confirmation-item .value {
+  font-weight: 700;
+  color: var(--slate-900);
+  font-size: 1rem;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* Pricing Section */
+.confirmation-section.pricing {
+  background: var(--card-bg);
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  color: var(--slate-600);
+}
+
+.price-row.peak {
+  color: var(--warning-600);
+}
+
+.price-row.total {
+  border-top: 2px solid var(--slate-200);
+  padding-top: 16px;
+  margin-top: 8px;
+  font-weight: 700;
+  color: var(--slate-900);
+  font-size: 1.1rem;
+}
+
+.price-note {
+  font-size: 0.8rem;
+  color: var(--slate-400);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+/* Step Actions */
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: white;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+
+.btn-secondary {
+  background: var(--slate-100);
+  color: var(--slate-700);
+}
+
+.btn-secondary:hover {
+  background: var(--slate-200);
+}
+
+.btn-lg {
+  padding: 16px 32px;
+  font-size: 1rem;
+}
+
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Success Step */
+.success-step {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.success-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--success-50);
+  color: var(--success-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.success-card h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin-bottom: 8px;
+}
+
+.success-card > p {
+  color: var(--slate-500);
+  margin-bottom: 32px;
+}
+
+/* Parking Token */
+.parking-token {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  border-radius: 16px;
+  overflow: hidden;
+  color: white;
+  margin-bottom: 24px;
+}
+
+.token-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+.token-details {
+  padding: 24px;
+}
+
+.token-main {
+  margin-bottom: 20px;
+}
+
+.slot-number {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.slot-floor {
+  display: block;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.token-info {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.success-actions {
+  margin-top: 24px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .vehicle-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .confirmation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .step-actions {
+    flex-direction: column-reverse;
+  }
+
+  .step-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .step-line {
+    width: 40px;
+  }
+
+  .steps-labels {
+    font-size: 0.75rem;
+  }
+}
