@@ -6,12 +6,14 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const Razorpay = require('razorpay');
+const cookieParser = require('cookie-parser');
 
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/error');
 const { slotAllocationService } = require('./services/slotAllocation');
 const { pricingService } = require('./services/pricing');
 const ParkingSlot = require('./models/ParkingSlot');
+const { startNotificationScheduler } = require('./services/notificationScheduler');
 
 // Route files
 const authRoutes = require('./routes/auth');
@@ -21,6 +23,7 @@ const reservationRoutes = require('./routes/reservations');
 const analyticsRoutes = require('./routes/analytics');
 const pricingRoutes = require('./routes/pricing');
 const paymentRoutes = require('./routes/payments');
+const voiceRoutes = require('./routes/voice');
 
 const app = express();
 
@@ -28,8 +31,9 @@ const app = express();
 connectDB();
 
 // Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // Security middleware
 app.use(helmet());
@@ -74,6 +78,7 @@ app.use('/api/reservations', reservationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -97,7 +102,8 @@ app.get('/api', (req, res) => {
       slots: '/api/slots',
       reservations: '/api/reservations',
       analytics: '/api/analytics',
-      pricing: '/api/pricing'
+      pricing: '/api/pricing',
+      voice: '/api/voice'
     }
   });
 });
@@ -130,6 +136,7 @@ const server = app.listen(PORT, async () => {
   try {
     await slotAllocationService.initialize(ParkingSlot);
     await pricingService.loadPricingRules();
+    startNotificationScheduler();
   } catch (error) {
     console.error('Failed to initialize services:', error);
   }

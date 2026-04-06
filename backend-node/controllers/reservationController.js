@@ -1,13 +1,15 @@
 const Reservation = require('../models/Reservation');
 const ParkingSlot = require('../models/ParkingSlot');
 const ParkingSession = require('../models/ParkingSession');
+const User = require('../models/User');
+const notificationService = require('../services/notificationService');
 
 // @desc    Create reservation
 // @route   POST /api/reservations
 // @access  Public
 exports.createReservation = async (req, res, next) => {
   try {
-    const {
+    let {
       customerName,
       customerPhone,
       customerEmail,
@@ -17,6 +19,34 @@ exports.createReservation = async (req, res, next) => {
       startTime,
       expectedDuration
     } = req.body;
+
+    customerName = customerName || req.body.ownerName;
+    customerPhone = customerPhone || req.body.ownerPhone;
+    customerEmail = customerEmail || req.body.ownerEmail;
+
+    const normalizePhone = (value) => {
+      if (!value) return null;
+      const digits = value.toString().replace(/\D/g, '');
+      return digits.length >= 10 ? digits.slice(-10) : null;
+    };
+
+    const normalizedPhone = normalizePhone(customerPhone);
+
+    if (!customerEmail || !customerName || !customerPhone) {
+      const lookupPhone = normalizedPhone || (req.user?.phone ? normalizePhone(req.user.phone) : null);
+      if (lookupPhone) {
+        const matchedUser = await User.findOne({ phone: lookupPhone }).select('name email phone');
+        if (matchedUser) {
+          customerEmail = customerEmail || matchedUser.email;
+          customerName = customerName || matchedUser.name;
+          customerPhone = customerPhone || matchedUser.phone;
+        }
+      }
+    }
+
+    if (normalizedPhone) {
+      customerPhone = normalizedPhone;
+    }
 
     // Validate required fields
     if (!customerName || !customerPhone || !vehicleId || !vehicleType || !startTime || !expectedDuration) {
@@ -79,6 +109,10 @@ exports.createReservation = async (req, res, next) => {
     availableSlot.status = 'reserved';
     availableSlot.reservedBy = reservation._id;
     await availableSlot.save();
+
+    notificationService
+      .sendReservationCreated(reservation, availableSlot)
+      .catch((error) => console.warn('Reservation email failed:', error.message || error));
 
     res.status(201).json({
       success: true,
@@ -194,6 +228,10 @@ exports.cancelReservation = async (req, res, next) => {
     reservation.cancellationReason = reason || 'Cancelled by user';
     await reservation.save();
 
+    notificationService
+      .sendReservationCancelled(reservation, slot, reason)
+      .catch((error) => console.warn('Reservation cancel email failed:', error.message || error));
+
     res.status(200).json({
       success: true,
       message: 'Reservation cancelled successfully',
@@ -252,6 +290,10 @@ exports.checkInReservation = async (req, res, next) => {
     reservation.status = 'active';
     reservation.parkingSession = session._id;
     await reservation.save();
+
+    notificationService
+      .sendReservationCheckedIn(reservation, slot, session._id)
+      .catch((error) => console.warn('Reservation check-in email failed:', error.message || error));
 
     res.status(200).json({
       success: true,

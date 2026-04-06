@@ -2,16 +2,42 @@ const Vehicle = require('../models/Vehicle');
 const ParkingSlot = require('../models/ParkingSlot');
 const ParkingSession = require('../models/ParkingSession');
 const Transaction = require('../models/Transaction');
+const Reservation = require('../models/Reservation');
+const User = require('../models/User');
 const { slotAllocationService } = require('../services/slotAllocation');
 const { pricingService } = require('../services/pricing');
+const notificationService = require('../services/notificationService');
+const { clearUserSessionCookie } = require('../utils/userSessionCookie');
+
+const normalizePhone = (value) => {
+  if (!value) return null;
+  const digits = value.toString().replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : null;
+};
 
 // @desc    Park a vehicle (add vehicle to parking)
 // @route   POST /api/vehicles/park
 // @access  Public
 exports.parkVehicle = async (req, res, next) => {
   try {
-    const { vehicleId, ownerName, ownerPhone } = req.body;
+    let { vehicleId, ownerName, ownerPhone } = req.body;
     const type = req.body.type || req.body.vehicleType;
+
+    const normalizedPhone = normalizePhone(ownerPhone);
+    let matchedUser = null;
+    if (normalizedPhone) {
+      matchedUser = await User.findOne({ phone: normalizedPhone }).select('name phone email');
+      if (matchedUser) {
+        ownerName = ownerName || matchedUser.name;
+        ownerPhone = ownerPhone || matchedUser.phone;
+      }
+    }
+
+    if (!matchedUser && req.user && req.user.role === 'user') {
+      matchedUser = req.user;
+      ownerName = ownerName || req.user.name;
+      ownerPhone = ownerPhone || req.user.phone;
+    }
 
     if (!vehicleId || !type) {
       return res.status(400).json({
@@ -70,9 +96,20 @@ exports.parkVehicle = async (req, res, next) => {
       vehicle = await Vehicle.create({
         vehicleId: vehicleId.toUpperCase(),
         type: vehicleType,
+        owner: matchedUser ? matchedUser._id : null,
         ownerName,
         ownerPhone
       });
+    } else {
+      if (matchedUser && !vehicle.owner) {
+        vehicle.owner = matchedUser._id;
+      }
+      if (ownerName && !vehicle.ownerName) {
+        vehicle.ownerName = ownerName;
+      }
+      if (ownerPhone && !vehicle.ownerPhone) {
+        vehicle.ownerPhone = ownerPhone;
+      }
     }
 
     // Create parking session
@@ -100,6 +137,25 @@ exports.parkVehicle = async (req, res, next) => {
     vehicle.totalParkings += 1;
     vehicle.lastParkedAt = new Date();
     await vehicle.save();
+
+    const estimatedDurationHours = Number(req.body.expectedDuration || req.body.duration || 0);
+    const estimatedExitTime = estimatedDurationHours > 0
+      ? new Date(new Date(session.entryTime).getTime() + estimatedDurationHours * 60 * 60 * 1000)
+      : null;
+
+    const recipientEmail = matchedUser?.email || req.user?.email || null;
+    notificationService
+      .sendParkingEntry({
+        session,
+        slot,
+        recipient: recipientEmail,
+        estimatedExitTime
+      })
+      .catch((error) => console.warn('Parking entry email failed:', error.message || error));
+
+    if (req.user && req.user.role === 'user') {
+      clearUserSessionCookie(res);
+    }
 
     res.status(201).json({
       success: true,
@@ -165,6 +221,30 @@ exports.exitVehicle = async (req, res, next) => {
       user = vehicle.owner;
     }
 
+    if (!user && req.user && req.user.role === 'user') {
+      user = req.user;
+    }
+
+    let reservation = null;
+    if (session.reservation) {
+      reservation = await Reservation.findById(session.reservation);
+    }
+
+    if (req.user && req.user.role === 'user') {
+      const ownerMatch = vehicle?.owner && vehicle.owner._id.toString() === req.user._id.toString();
+      const reservationMatch = reservation?.user && reservation.user.toString() === req.user._id.toString();
+      const vehiclePhone = normalizePhone(vehicle?.ownerPhone);
+      const userPhone = normalizePhone(req.user.phone);
+      const phoneMatch = Boolean(vehiclePhone && userPhone && vehiclePhone === userPhone);
+
+      if (!ownerMatch && !reservationMatch && !phoneMatch) {
+        return res.status(403).json({
+          success: false,
+          message: 'You are not authorized to exit this vehicle'
+        });
+      }
+    }
+
     // Calculate bill
     session.exitTime = new Date();
     const billDetails = pricingService.calculateBill(session, user);
@@ -226,6 +306,21 @@ exports.exitVehicle = async (req, res, next) => {
       paymentStatus: 'completed',
       processedBy: req.user ? req.user._id : null
     });
+
+    const recipientEmail = reservation?.customerEmail || user?.email || null;
+    notificationService
+      .sendParkingExit({
+        session,
+        receipt: {
+          totalAmount: billDetails.totalAmount
+        },
+        recipient: recipientEmail
+      })
+      .catch((error) => console.warn('Parking exit email failed:', error.message || error));
+
+    if (req.user && req.user.role === 'user') {
+      clearUserSessionCookie(res);
+    }
 
     res.status(200).json({
       success: true,

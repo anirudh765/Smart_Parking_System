@@ -4,10 +4,13 @@ import {
   ParkingCircle, Car, Bike, Truck, Zap, Search, LogOut,
   Wallet, Sparkles, ArrowRight, CheckCircle2, MapPin, Clock,
   User, Phone, CreditCard, DollarSign, Receipt, AlertCircle,
-  LayoutDashboard, RefreshCw, Plus, Mail, Lock, UserPlus, ShieldCheck
+  LayoutDashboard, RefreshCw, Plus, Mail, Lock, UserPlus, ShieldCheck, Mic
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { vehicleService, pricingService, slotService, authService, paymentService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import VoiceAssistant from './VoiceAssistant';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import './UserPortal.css';
 
 /* ── helpers ─────────────────────────────────────────────────────── */
@@ -19,6 +22,14 @@ const setWalletBalance = (phone, amt) => {
   const d = JSON.parse(localStorage.getItem('parkease_wallets') || '{}');
   d[phone] = amt;
   localStorage.setItem('parkease_wallets', JSON.stringify(d));
+};
+
+const normalizeUserVehicleType = (type) => {
+  if (!type) return 'car';
+  const lower = type.toLowerCase();
+  if (lower === 'electric') return 'ev';
+  if (lower === 'bike') return 'motorcycle';
+  return lower;
 };
 
 const vehicleTypes = [
@@ -71,7 +82,7 @@ const SlotStatus = () => {
 };
 
 /* ── BookTab ─────────────────────────────────────────────────────── */
-const BookTab = ({ onVerified }) => {
+const BookTab = ({ onVerified, authUser, onAutoLogout, logoutSignal }) => {
   // step: 0=phone-verify | 'register'=registration | 1=vehicle+details | 2=pricing | 3=done
   const [step, setStep]           = useState(0);
 
@@ -98,7 +109,14 @@ const BookTab = ({ onVerified }) => {
   const [result, setResult]       = useState(null);
   const [slotCounts, setSlots]    = useState({});
   const [lastVehicle, setLastV]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem('parkease_last_vehicle') || 'null'); } catch { return null; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem('parkease_last_vehicle') || 'null');
+      if (!parsed) return null;
+      return {
+        ...parsed,
+        vehicleType: normalizeUserVehicleType(parsed.vehicleType || parsed.vehicleTypeBackend)
+      };
+    } catch { return null; }
   });
 
   useEffect(() => {
@@ -114,6 +132,18 @@ const BookTab = ({ onVerified }) => {
     }).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (authUser?.role === 'user') {
+      setVerified({ name: authUser.name, membershipType: authUser.membershipType });
+      setOwner(authUser.name || '');
+      if (authUser.phone) {
+        setPhone(authUser.phone);
+      }
+      setStep(prev => (prev === 0 || prev === 'register' ? 1 : prev));
+      onVerified?.(authUser);
+    }
+  }, [authUser, onVerified]);
+
   /* ── Phone verify ── */
   const verifyPhone = async (e) => {
     e.preventDefault();
@@ -123,11 +153,13 @@ const BookTab = ({ onVerified }) => {
       const r = await authService.checkPhone(phone);
       const d = r.data;
       if (d.registered) {
-        setVerified({ name: d.name, membershipType: d.membershipType });
-        setOwner(d.name);
-        toast.success(`Welcome back, ${d.name}!`);
+        const loginRes = await authService.loginPhone({ phone });
+        const userData = loginRes.data?.data;
+        setVerified({ name: userData?.name || d.name, membershipType: userData?.membershipType || d.membershipType });
+        setOwner(userData?.name || d.name);
+        toast.success(`Welcome back, ${userData?.name || d.name}!`);
         setStep(1);
-        onVerified?.();
+        onVerified?.(userData);
       } else {
         setStep('register');
       }
@@ -146,11 +178,13 @@ const BookTab = ({ onVerified }) => {
     setRegistering(true);
     try {
       await authService.register({ name: regName.trim(), email: regEmail.trim(), password: regPass, phone });
-      setVerified({ name: regName.trim(), membershipType: 'regular' });
-      setOwner(regName.trim());
+      const loginRes = await authService.loginPhone({ phone });
+      const userData = loginRes.data?.data || { name: regName.trim(), membershipType: 'regular' };
+      setVerified({ name: userData.name, membershipType: userData.membershipType });
+      setOwner(userData.name);
       toast.success('Account created! You can now park.');
       setStep(1);
-      onVerified?.();
+      onVerified?.(userData);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally { setRegistering(false); }
@@ -160,7 +194,7 @@ const BookTab = ({ onVerified }) => {
   const applyAndBook = async () => {
     if (!lastVehicle) return;
     const newVid = lastVehicle.vehicleId;
-    const newVtype = lastVehicle.vehicleType || 'car';
+    const newVtype = normalizeUserVehicleType(lastVehicle.vehicleType || lastVehicle.vehicleTypeBackend || 'car');
     const newOwner = lastVehicle.ownerName || '';
     setVid(newVid);
     setOwner(newOwner);
@@ -182,7 +216,8 @@ const BookTab = ({ onVerified }) => {
     if (!vid.trim() || vid.trim().length < 3) { toast.error('Enter a valid vehicle number'); return; }
     setLoading(true);
     try {
-      const r = await pricingService.getEstimate(vtype, hours);
+      const backendType = vehicleTypes.find(v => v.id === vtype)?.backendType || vtype;
+      const r = await pricingService.getEstimate(backendType, hours);
       setEstimate(r.data.data || r.data);
       setStep(2);
     } catch { toast.error('Could not fetch pricing estimate'); }
@@ -202,11 +237,18 @@ const BookTab = ({ onVerified }) => {
       const r = await vehicleService.park(payload);
       const data = r.data.data || r.data;
       setResult(data);
-      const lv = { vehicleId: payload.vehicleId, vehicleType: vtype, ownerName: payload.ownerName, phone: payload.phone };
+      const lv = {
+        vehicleId: payload.vehicleId,
+        vehicleType: vtype,
+        vehicleTypeBackend: payload.vehicleType,
+        ownerName: payload.ownerName,
+        phone: payload.phone
+      };
       localStorage.setItem('parkease_last_vehicle', JSON.stringify(lv));
       setLastV(lv);
       setStep(3);
       toast.success('Vehicle parked!');
+      onAutoLogout?.();
     } catch (err) {
       toast.error(err.response?.data?.message || err.response?.data?.error || 'Parking failed');
     } finally { setLoading(false); }
@@ -216,6 +258,12 @@ const BookTab = ({ onVerified }) => {
     setStep(0); setPhone(''); setVerified(null); setRegName(''); setRegEmail(''); setRegPass(''); setRegConfirm('');
     setVid(''); setOwner(''); setHours(1); setEstimate(null); setResult(null);
   };
+
+  useEffect(() => {
+    if (logoutSignal > 0) {
+      reset();
+    }
+  }, [logoutSignal]);
 
   // Numeric booking step (1/2/3) for the step indicator
   const numStep = typeof step === 'number' && step >= 1 ? step : null;
@@ -441,7 +489,7 @@ const BookTab = ({ onVerified }) => {
 };
 
 /* ── ExitTab ─────────────────────────────────────────────────────── */
-const ExitTab = () => {
+const ExitTab = ({ onAutoLogout }) => {
   const [phase, setPhase]         = useState('search');   // search | preview | done
   const [vehicleId, setVehicleId] = useState('');
   const [vehicleData, setVehicleData] = useState(null);
@@ -502,6 +550,7 @@ const ExitTab = () => {
         }
         setPhase('done');
         toast.success('Exit completed!');
+        onAutoLogout?.();
       } catch (err) {
         toast.error(err.response?.data?.message || err.response?.data?.error || 'Exit failed');
       } finally { setLoading(false); }
@@ -568,6 +617,7 @@ const ExitTab = () => {
             setReceipt(rec);
             setPhase('done');
             toast.success('Payment successful and exit completed!');
+            onAutoLogout?.();
           } catch (err) {
             toast.error(err.response?.data?.message || 'Payment verification or exit failed');
           } finally {
@@ -792,7 +842,7 @@ const LookupTab = () => {
 };
 
 /* ── WalletTab ───────────────────────────────────────────────────── */
-const WalletTab = () => {
+const WalletTab = ({ onAutoLogout }) => {
   const [step, setStep]     = useState(1);
   const [phone, setPhone]   = useState('');
   const [balance, setBalance] = useState(0);
@@ -819,6 +869,7 @@ const WalletTab = () => {
     setAmount('');
     setLoading(false);
     toast.success(`₹${amt} added to wallet!`);
+    onAutoLogout?.();
   };
 
   return (
@@ -879,19 +930,79 @@ const WalletTab = () => {
   );
 };
 
+/* ── VoiceTab ────────────────────────────────────────────────────── */
+const VoiceTab = ({ onVerified, authUser, onAutoLogout }) => (
+  <div className="up-panel">
+    <VoiceAssistant
+      requirePhoneLogin
+      onVerified={onVerified}
+      authUser={authUser}
+      onAutoLogout={onAutoLogout}
+    />
+  </div>
+);
+
 /* ── Tabs config ─────────────────────────────────────────────────── */
 const tabs = [
-  { id: 'book',   label: 'Park',   Icon: ParkingCircle, component: BookTab   },
-  { id: 'exit',   label: 'Exit',   Icon: LogOut,        component: ExitTab   },
-  { id: 'lookup', label: 'Lookup', Icon: Search,        component: LookupTab },
-  { id: 'wallet', label: 'Wallet', Icon: Wallet,        component: WalletTab },
+  { id: 'book',   label: 'Park',   Icon: ParkingCircle, component: BookTab,   requiresVerify: false },
+  { id: 'voice',  label: 'Voice',  Icon: Mic,           component: VoiceTab,  requiresVerify: false },
+  { id: 'exit',   label: 'Exit',   Icon: LogOut,        component: ExitTab,   requiresVerify: true },
+  { id: 'lookup', label: 'Lookup', Icon: Search,        component: LookupTab, requiresVerify: true },
+  { id: 'wallet', label: 'Wallet', Icon: Wallet,        component: WalletTab, requiresVerify: true },
 ];
 
 /* ── UserPortal ──────────────────────────────────────────────────── */
 const UserPortal = () => {
+  const { user: adminUser } = useAuth();
   const [activeTab, setActiveTab] = useState('book');
   const [isVerified, setIsVerified] = useState(false);
+  const [sessionUser, setSessionUser] = useState(null);
+  const [logoutSignal, setLogoutSignal] = useState(0);
+  const handleVerified = useCallback((userData) => {
+    if (userData) {
+      setSessionUser(userData);
+    }
+    setIsVerified(true);
+  }, []);
   const ActiveComp = tabs.find(t => t.id === activeTab)?.component || BookTab;
+
+  useEffect(() => {
+    const loadUserSession = async () => {
+      try {
+        const res = await authService.getMe();
+        const data = res.data?.data;
+        if (data?.role === 'user') {
+          setSessionUser(data);
+          setIsVerified(true);
+        }
+      } catch {
+        // no active user session
+      } finally {
+        // no-op
+      }
+    };
+
+    loadUserSession();
+  }, []);
+
+  useEffect(() => {
+    if (adminUser?.role === 'admin' || adminUser?.role === 'operator') {
+      setSessionUser(null);
+      setIsVerified(false);
+    }
+  }, [adminUser]);
+
+  const handleAutoLogout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // ignore
+    }
+    setSessionUser(null);
+    setIsVerified(false);
+    setActiveTab('book');
+    setLogoutSignal(prev => prev + 1);
+  }, []);
 
   return (
     <div className="user-portal">
@@ -903,6 +1014,7 @@ const UserPortal = () => {
         </div>
         <div className="up-header-right">
           <SlotStatus />
+          <LanguageSwitcher className="up-lang-switcher" />
           <Link to="/login" className="up-admin-link">
             <LayoutDashboard size={14} /> Admin
           </Link>
@@ -918,7 +1030,7 @@ const UserPortal = () => {
       {/* Tabs */}
       <nav className="up-tab-bar">
         {tabs.map(t => {
-          const locked = !isVerified && t.id !== 'book';
+          const locked = !isVerified && t.requiresVerify;
           return (
             <button
               key={t.id}
@@ -940,7 +1052,12 @@ const UserPortal = () => {
       {/* Content */}
       <main className="up-body">
         <div className="tab-content">
-          <ActiveComp onVerified={() => setIsVerified(true)} />
+          <ActiveComp
+            onVerified={handleVerified}
+            authUser={sessionUser}
+            onAutoLogout={handleAutoLogout}
+            logoutSignal={logoutSignal}
+          />
         </div>
       </main>
 

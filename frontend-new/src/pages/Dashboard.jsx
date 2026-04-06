@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Car, Bike, Truck, Zap, TrendingUp, TrendingDown, 
   DollarSign, Clock, ParkingCircle, Users, Activity,
@@ -36,6 +37,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
   const [slotSummary, setSlotSummary] = useState(null);
@@ -244,7 +246,7 @@ const Dashboard = () => {
         >
           <div className="card-header">
             <h3>Recent Transactions</h3>
-            <button className="view-all-btn">View All</button>
+            <button className="view-all-btn" onClick={() => navigate('/transactions')}>View All</button>
           </div>
           <div className="transactions-list">
             {dashboardData?.recentTransactions?.length > 0 ? (

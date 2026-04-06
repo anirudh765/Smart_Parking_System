@@ -88,7 +88,7 @@ const ParkingSessionSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'card', 'upi', 'wallet', 'membership'],
+    enum: ['cash', 'card', 'upi', 'wallet', 'membership', 'online'],
     default: null
   },
   paidAt: {

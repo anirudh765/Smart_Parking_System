@@ -3,6 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { ParkingCircle } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import './AuthLayout.css';
 
 const AuthLayout = () => {
@@ -67,14 +68,10 @@ const AuthLayout = () => {
       </div>
       
       <div className="auth-right">
-        <motion.div 
-          className="auth-form-container"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <Outlet />
-        </motion.div>
+        <div className="auth-lang">
+          <LanguageSwitcher />
+        </div>
+        <Outlet />
       </div>
     </div>
   );

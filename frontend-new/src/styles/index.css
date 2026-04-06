@@ -92,6 +92,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide Google Translate banner */
+.goog-te-banner-frame.skiptranslate,
+body > .skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;

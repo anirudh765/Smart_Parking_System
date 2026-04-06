@@ -1,4 +1,16 @@
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendEmail } = require('../services/smtpEmail');
+const { setUserSessionCookie, clearUserSessionCookie } = require('../utils/userSessionCookie');
+
+const issueUserCookie = (res, user) => {
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+    expiresIn: '5m'
+  });
+  setUserSessionCookie(res, token);
+  return token;
+};
 
 // @desc    Check if phone number is registered
 // @route   GET /api/auth/check-phone/:phone
@@ -14,6 +26,49 @@ exports.checkPhone = async (req, res, next) => {
       return res.status(200).json({ success: true, registered: true, name: user.name, membershipType: user.membershipType });
     }
     return res.status(200).json({ success: true, registered: false });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Login user by phone (sets short-lived JWT cookie)
+// @route   POST /api/auth/login-phone
+// @access  Public
+exports.loginPhone = async (req, res, next) => {
+  try {
+    const { phone } = req.body;
+    if (!phone || !/^[0-9]{10}$/.test(phone)) {
+      return res.status(400).json({ success: false, message: 'Invalid phone number' });
+    }
+
+    const user = await User.findOne({ phone }).select('name email role phone membershipType loyaltyPoints isActive');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.role !== 'user') {
+      return res.status(403).json({ success: false, message: 'Phone login is only available for users' });
+    }
+
+    if (!user.isActive) {
+      return res.status(401).json({ success: false, message: 'Account is deactivated. Please contact admin' });
+    }
+
+    issueUserCookie(res, user);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        membershipType: user.membershipType,
+        loyaltyPoints: user.loyaltyPoints
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -70,7 +125,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Email not found'
       });
     }
 
@@ -88,7 +143,7 @@ exports.login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Incorrect password'
       });
     }
 
@@ -177,11 +232,91 @@ exports.updatePassword = async (req, res, next) => {
 // @route   POST /api/auth/logout
 // @access  Private
 exports.logout = async (req, res, next) => {
+  clearUserSessionCookie(res);
   res.status(200).json({
     success: true,
     message: 'Logged out successfully',
     data: {}
   });
+};
+
+// @desc    Forgot password - send reset link
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    user.resetPasswordToken = resetTokenHash;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+    const subject = 'Reset your ParkEase password';
+    const text = `You requested a password reset. Use the link below to set a new password:\n${resetUrl}\nThis link expires in 15 minutes.`;
+    const html = `<p>You requested a password reset.</p><p><a href="${resetUrl}">Reset your password</a></p><p>This link expires in 15 minutes.</p>`;
+
+    try {
+      await sendEmail({ to: user.email, subject, text, html });
+    } catch (error) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ success: false, message: 'Email could not be sent' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Reset email sent' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reset password
+// @route   PUT /api/auth/reset-password/:resetToken
+// @access  Public
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { resetToken } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: resetTokenHash,
+      resetPasswordExpire: { $gt: Date.now() }
+    }).select('+password');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: 'Password reset successful' });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // Helper function to get token from model, create cookie and send response

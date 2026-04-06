@@ -8,6 +8,7 @@
 .auth-form-header {
   text-align: center;
   margin-bottom: 32px;
+  position: relative;
 }
 
 .auth-form-header h1 {
@@ -20,6 +21,35 @@
 .auth-form-header p {
   color: var(--slate-500);
   font-size: 1rem;
+}
+
+.auth-theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--slate-100);
+  color: var(--slate-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.auth-theme-toggle:hover {
+  background: var(--slate-200);
+  color: var(--slate-800);
+  transform: translateY(-1px);
+}
+
+html.dark .auth-theme-toggle {
+  background: rgba(15, 23, 42, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2);
 }
 
 /* Form Styles */
@@ -115,6 +145,12 @@
   border-radius: 12px;
   color: var(--error-700);
   font-size: 0.9rem;
+}
+
+html.dark .auth-error {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fecaca;
 }
 
 /* Form Footer */

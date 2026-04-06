@@ -3,6 +3,23 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
+const getStoredToken = () => localStorage.getItem('token') || sessionStorage.getItem('token');
+
+const setStoredToken = (token, remember) => {
+  if (remember) {
+    localStorage.setItem('token', token);
+    sessionStorage.removeItem('token');
+  } else {
+    sessionStorage.setItem('token', token);
+    localStorage.removeItem('token');
+  }
+};
+
+const clearStoredToken = () => {
+  localStorage.removeItem('token');
+  sessionStorage.removeItem('token');
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -13,7 +30,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(getStoredToken());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,24 +51,29 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, [token]);
 
-  const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    const { token: newToken, data } = response.data;
-    
-    localStorage.setItem('token', newToken);
-    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-    
-    setToken(newToken);
-    setUser(data);
-    
-    return response.data;
+  const login = async (email, password, remember = true) => {
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token: newToken, data } = response.data;
+
+      setStoredToken(newToken, remember);
+      api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+
+      setToken(newToken);
+      setUser(data);
+
+      return { ...response.data, success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Login failed';
+      return { success: false, error: message };
+    }
   };
 
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
     const { token: newToken, data } = response.data;
     
-    localStorage.setItem('token', newToken);
+    setStoredToken(newToken, true);
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     
     setToken(newToken);
@@ -61,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    clearStoredToken();
     delete api.defaults.headers.common['Authorization'];
     setToken(null);
     setUser(null);

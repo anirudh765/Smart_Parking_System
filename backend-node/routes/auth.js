@@ -7,9 +7,12 @@ const { protect } = require('../middleware/auth');
 const {
   register,
   login,
+  loginPhone,
   getMe,
   updateDetails,
   updatePassword,
+  forgotPassword,
+  resetPassword,
   logout,
   checkPhone
 } = require('../controllers/authController');
@@ -29,8 +32,11 @@ const loginValidation = [
 
 // Routes
 router.get('/check-phone/:phone', checkPhone);
+router.post('/login-phone', loginPhone);
 router.post('/register', registerValidation, validate, register);
 router.post('/login', loginValidation, validate, login);
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:resetToken', resetPassword);
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePassword);

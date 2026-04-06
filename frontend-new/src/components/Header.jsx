@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import LanguageSwitcher from './LanguageSwitcher';
 import './Header.css';
 
 const Header = ({ toggleSidebar }) => {
@@ -104,6 +105,7 @@ const Header = ({ toggleSidebar }) => {
         </div>
 
         <div className="header-right">
+          <LanguageSwitcher className="header-lang" />
           {/* Dark Mode Toggle */}
           <button 
             className="icon-btn"

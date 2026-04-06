@@ -59,6 +59,14 @@ const UserSchema = new mongoose.Schema({
   totalSpent: {
     type: Number,
     default: 0
+  },
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpire: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

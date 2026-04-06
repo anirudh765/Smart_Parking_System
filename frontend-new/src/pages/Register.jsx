@@ -166,7 +166,7 @@ const Register = () => {
               </button>
             </div>
           </div>
-
+        
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password *</label>
             <div className="input-wrapper">

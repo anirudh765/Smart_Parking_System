@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
@@ -15,6 +15,20 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('parkease_theme');
+    return saved === 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('parkease_theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,7 +44,7 @@ const Login = () => {
       return;
     }
 
-    const result = await login(formData.email, formData.password);
+    const result = await login(formData.email, formData.password, rememberMe);
     
     if (result.success) {
       navigate('/dashboard');
@@ -47,6 +61,14 @@ const Login = () => {
       transition={{ duration: 0.4 }}
     >
       <div className="auth-form-header">
+        <button
+          type="button"
+          className="auth-theme-toggle"
+          onClick={toggleDarkMode}
+          title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
         <h1>Welcome back</h1>
         <p>Sign in to your account to continue</p>
       </div>
@@ -105,7 +127,11 @@ const Login = () => {
 
         <div className="form-footer">
           <label className="remember-me">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
             <span>Remember me</span>
           </label>
           <Link to="/forgot-password" className="forgot-link">
@@ -134,7 +160,7 @@ const Login = () => {
         </motion.button>
       </form>
 
-      <div className="auth-divider">
+      {/* <div className="auth-divider">
         <span>or continue with</span>
       </div>
 
@@ -154,20 +180,20 @@ const Login = () => {
           </svg>
           <span>GitHub</span>
         </button>
-      </div>
+      </div> */}
 
       <p className="auth-switch">
         Don't have an account?{' '}
         <Link to="/register">Create account</Link>
       </p>
 
-      <div className="demo-credentials">
+      {/* <div className="demo-credentials">
         <p>Demo Credentials:</p>
         <div className="credentials-list">
           <span><strong>Admin:</strong> admin@parkease.com / Admin@123</span>
           <span><strong>Operator:</strong> operator@parkease.com / Operator@123</span>
         </div>
-      </div>
+      </div> */}
     </motion.div>
   );
 };

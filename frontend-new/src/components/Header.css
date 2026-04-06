@@ -96,6 +96,21 @@
   gap: 8px;
 }
 
+.header-lang select {
+  padding: 8px 32px 8px 12px;
+  font-size: 0.8rem;
+  background: var(--slate-100);
+  border-color: var(--slate-200);
+  color: var(--slate-700);
+}
+
+html.dark .header-lang select {
+  background: rgba(15, 23, 42, 0.95);
+  color: #ffffff;
+  border-color: rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2);
+}
+
 .icon-btn {
   width: 42px;
   height: 42px;

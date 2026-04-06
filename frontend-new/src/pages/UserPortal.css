@@ -50,6 +50,17 @@
   flex-wrap: wrap;
 }
 
+.up-lang-switcher select {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.up-lang-switcher select option {
+  color: #0f172a;
+}
+
 .up-admin-link {
   display: flex;
   align-items: center;

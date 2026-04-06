@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
   timeout: 10000,
 });
 
@@ -29,8 +30,24 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const adminToken = localStorage.getItem('token');
       localStorage.removeItem('token');
-      if (window.location.pathname !== '/login') {
+
+      const adminRoutes = [
+        '/dashboard',
+        '/park',
+        '/exit',
+        '/lookup',
+        '/status',
+        '/reservations',
+        '/transactions',
+        '/analytics',
+        '/settings'
+      ];
+      const path = window.location.pathname || '/';
+      const isAdminPath = adminRoutes.some((route) => path.startsWith(route));
+
+      if ((adminToken || isAdminPath) && path !== '/login') {
         window.location.href = '/login';
       }
     }
@@ -86,9 +103,17 @@ export const paymentService = {
   verifyPayment: (data) => api.post('/payments/verify', data),
 };
 
+export const voiceService = {
+  transcribe: (data) => api.post('/voice/transcribe', data),
+  command: (data) => api.post('/voice/command', data),
+};
+
 export const authService = {
   login: (data) => api.post('/auth/login', data),
+  loginPhone: (data) => api.post('/auth/login-phone', data),
   register: (data) => api.post('/auth/register', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  resetPassword: (resetToken, data) => api.put(`/auth/reset-password/${resetToken}`, data),
   checkPhone: (phone) => api.get(`/auth/check-phone/${phone}`),
   getMe: () => api.get('/auth/me'),
   updateDetails: (data) => api.put('/auth/updatedetails', data),

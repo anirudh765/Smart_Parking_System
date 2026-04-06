@@ -11,6 +11,7 @@ import UserPortal from './pages/UserPortal';
 import Dashboard from './pages/Dashboard';
 import ParkVehicle from './pages/ParkVehicle';
 import ExitVehicle from './pages/ExitVehicle';
+import VoiceAssistant from './pages/VoiceAssistant';
 import VehicleLookup from './pages/VehicleLookup';
 import ParkingStatus from './pages/ParkingStatus';
 import Reservations from './pages/Reservations';
@@ -19,6 +20,8 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
 
 // Protected Route Component
@@ -55,6 +58,8 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
 
       {/* Admin app routes — all require authentication */}
@@ -62,6 +67,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/park" element={<ParkVehicle />} />
         <Route path="/exit" element={<ExitVehicle />} />
+        <Route path="/voice" element={<VoiceAssistant />} />
         <Route path="/lookup" element={<VehicleLookup />} />
         <Route path="/status" element={<ParkingStatus />} />
         <Route path="/reservations" element={<Reservations />} />

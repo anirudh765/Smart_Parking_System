@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, ParkingCircle, LogOut, Search, 
   BarChart3, Calendar, Settings, Car, ChevronLeft, 
-  ChevronRight, Receipt
+  ChevronRight, Receipt, Mic
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
@@ -21,6 +21,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { path: '/dashboard', name: 'Dashboard', icon: LayoutDashboard },
         { path: '/park', name: 'Park Vehicle', icon: Car },
         { path: '/exit', name: 'Exit Vehicle', icon: LogOut },
+        { path: '/voice', name: 'Voice Assistant', icon: Mic },
         { path: '/lookup', name: 'Vehicle Lookup', icon: Search },
       ]
     },

@@ -9,6 +9,20 @@ import { vehicleService, slotService, pricingService } from '../services/api';
 import toast from 'react-hot-toast';
 import './ParkVehicle.css';
 
+const normalizeVehicleType = (type) => {
+  if (!type) return type;
+  const lower = type.toLowerCase();
+  if (lower === 'ev') return 'electric';
+  if (lower === 'motorcycle') return 'bike';
+  return lower;
+};
+
+const mapBackendToUserType = (type) => {
+  if (type === 'electric') return 'ev';
+  if (type === 'bike') return 'motorcycle';
+  return type;
+};
+
 const ParkVehicle = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -38,7 +52,14 @@ const ParkVehicle = () => {
     fetchSlotSummary();
     const saved = localStorage.getItem('parkease_last_vehicle');
     if (saved) {
-      try { setLastVehicle(JSON.parse(saved)); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        const normalizedType = normalizeVehicleType(parsed.vehicleTypeBackend || parsed.vehicleType);
+        setLastVehicle({
+          ...parsed,
+          vehicleType: normalizedType
+        });
+      } catch (e) {}
     }
   }, []);
 
@@ -59,7 +80,8 @@ const ParkVehicle = () => {
 
   const fetchPriceEstimate = async () => {
     try {
-      const res = await pricingService.getEstimate(formData.vehicleType, formData.duration);
+      const vehicleType = normalizeVehicleType(formData.vehicleType);
+      const res = await pricingService.getEstimate(vehicleType, formData.duration);
       setEstimatedPrice(res.data.data);
     } catch (error) {
       console.error('Failed to fetch price estimate:', error);
@@ -120,9 +142,10 @@ const ParkVehicle = () => {
 
     setLoading(true);
     try {
+      const vehicleType = normalizeVehicleType(formData.vehicleType);
       const res = await vehicleService.park({
         vehicleId: formData.vehicleId.toUpperCase(),
-        vehicleType: formData.vehicleType,
+        vehicleType,
         ownerName: formData.ownerName,
         ownerPhone: formData.ownerPhone
       });
@@ -134,12 +157,16 @@ const ParkVehicle = () => {
       // Save for one-tap booking next time
       const toSave = {
         vehicleId: formData.vehicleId.toUpperCase(),
-        vehicleType: formData.vehicleType,
+        vehicleType: mapBackendToUserType(vehicleType),
+        vehicleTypeBackend: vehicleType,
         ownerName: formData.ownerName,
         ownerPhone: formData.ownerPhone
       };
       localStorage.setItem('parkease_last_vehicle', JSON.stringify(toSave));
-      setLastVehicle(toSave);
+      setLastVehicle({
+        ...toSave,
+        vehicleType
+      });
     } catch (error) {
       toast.error(error.response?.data?.error || error.response?.data?.message || 'Failed to park vehicle');
     } finally {
@@ -169,10 +196,11 @@ const ParkVehicle = () => {
 
   const handleQuickPark = () => {
     if (!lastVehicle) return;
+    const normalizedType = normalizeVehicleType(lastVehicle.vehicleTypeBackend || lastVehicle.vehicleType);
     setFormData(prev => ({
       ...prev,
       vehicleId: lastVehicle.vehicleId,
-      vehicleType: lastVehicle.vehicleType,
+      vehicleType: normalizedType,
       ownerName: lastVehicle.ownerName,
       ownerPhone: lastVehicle.ownerPhone || ''
     }));
@@ -229,7 +257,7 @@ const ParkVehicle = () => {
                     <div>
                       <span className="quick-park-label">Quick Park</span>
                       <span className="quick-park-detail">
-                        {lastVehicle.vehicleId} &bull; {lastVehicle.vehicleType} &bull; {lastVehicle.ownerName}
+                        {lastVehicle.vehicleId} &bull; {(vehicleTypes.find(type => type.id === lastVehicle.vehicleType)?.label || lastVehicle.vehicleType)} &bull; {lastVehicle.ownerName}
                       </span>
                     </div>
                   </div>
