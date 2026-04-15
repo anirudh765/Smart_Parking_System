@@ -134,9 +134,9 @@ const Login = () => {
             />
             <span>Remember me</span>
           </label>
-          <Link to="/forgot-password" className="forgot-link">
+          {/* <Link to="/forgot-password" className="forgot-link">
             Forgot password?
-          </Link>
+          </Link> */}
         </div>
 
         <motion.button
@@ -182,10 +182,10 @@ const Login = () => {
         </button>
       </div> */}
 
-      <p className="auth-switch">
+      {/* <p className="auth-switch">
         Don't have an account?{' '}
         <Link to="/register">Create account</Link>
-      </p>
+      </p> */}
 
       {/* <div className="demo-credentials">
         <p>Demo Credentials:</p>

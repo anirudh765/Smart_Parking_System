@@ -62,8 +62,8 @@ function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
 
-      {/* Admin app routes — all require authentication */}
-      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+      {/* Admin app routes — admin only */}
+      <Route element={<ProtectedRoute roles={['admin']}><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/park" element={<ParkVehicle />} />
         <Route path="/exit" element={<ExitVehicle />} />

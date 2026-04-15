@@ -308,7 +308,7 @@
 }
 
 .peak-slot.morning .peak-fill {
-  background: linear-gradient(90deg, var(--warning-400), var(--warning-500));
+  background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
 }
 
 .peak-slot.afternoon .peak-fill {

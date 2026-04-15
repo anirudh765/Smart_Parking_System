@@ -129,6 +129,13 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    if (user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin login only.'
+      });
+    }
+
     // Check if user is active
     if (!user.isActive) {
       return res.status(401).json({
