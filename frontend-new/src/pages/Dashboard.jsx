@@ -91,14 +91,14 @@ const Dashboard = () => {
       trend: '+18%',
       trendUp: true
     },
-    {
-      title: 'Reservations',
-      value: dashboardData?.currentStats?.todayReservations || 0,
-      icon: Clock,
-      color: 'orange',
-      trend: 'Today',
-      trendUp: true
-    }
+    // {
+    //   title: 'Reservations',
+    //   value: dashboardData?.currentStats?.todayReservations || 0,
+    //   icon: Clock,
+    //   color: 'orange',
+    //   trend: 'Today',
+    //   trendUp: true
+    // }
   ];
 
   const vehicleTypeData = {

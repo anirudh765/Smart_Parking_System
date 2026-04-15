@@ -29,9 +29,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       title: 'Management',
       items: [
         { path: '/status', name: 'Parking Status', icon: ParkingCircle },
-        { path: '/reservations', name: 'Reservations', icon: Calendar },
+        // { path: '/reservations', name: 'Reservations', icon: Calendar },
         { path: '/transactions', name: 'Transactions', icon: Receipt },
-        { path: '/analytics', name: 'Analytics', icon: BarChart3, badge: 'Pro' },
+        { path: '/analytics', name: 'Analytics', icon: BarChart3},
       ]
     },
     {
